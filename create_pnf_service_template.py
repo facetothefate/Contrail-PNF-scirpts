@@ -11,15 +11,16 @@ def pair(s):
         raise argparse.ArgumentTypeError("Physical pairs must be in the form a1,b1 a2,b2 a3,b3 ...")
 
 parser = argparse.ArgumentParser(description='Create service template and link PIs')
-parser.add_argument('--st_name', help='service template name', required=True)
-parser.add_argument('--physical_pairs', nargs='*', type=pair, help='Physical pairs must be in the form a1,b1 a2,b2 a3,b3 ...)', required=True)
+parser.add_argument('--service_template_name', help='service template name', required=True)
+parser.add_argument('--physical_interface_pairs', nargs='*', type=pair, help='Physical pairs must be in the form a1,b1 a2,b2 a3,b3 ...)', required=True)
+parser.add_argument('--admin_user', help='optional admin username', default="admin")
+parser.add_argument('--admin_password', help='optional admin password', default = "zaqwsx")
+parser.add_argument('--admin_tenant_name', help='optional tenant name', default="admin")
 args = parser.parse_args()
-
-
 
 # GET vnc_lib
 try:
-    vnc_lib = vnc_api.VncApi(api_server_host="127.0.0.1",username="admin",password="zaqwsx",tenant_name="admin")
+    vnc_lib = vnc_api.VncApi(api_server_host="127.0.0.1",username=args.admin_user, password=args.admin_password, tenant_name=args.admin_tenant_name)
 except:
     print("Unable to connect to vnc_lib")
     sys.exit(0)
@@ -27,7 +28,7 @@ except:
 
 #create service appliance set
 try:
-    sa_set = ServiceApplianceSet("SA_set_script")
+    sa_set = ServiceApplianceSet("SA_set_script_"+str(args.service_template_name))
     sa_set_created = vnc_lib.service_appliance_set_create(sa_set)
 except RefsExistError:
     sa_set_created = vnc_lib.service_appliance_set_update(sa_set)
@@ -37,7 +38,7 @@ except:
 
 
 
-for idx,pair in enumerate(args.physical_pairs):
+for idx,pair in enumerate(args.physical_interface_pairs):
 
     # read first PI from pair
     try:
@@ -45,70 +46,66 @@ for idx,pair in enumerate(args.physical_pairs):
     except:
         print ("Unable to read Physical Interface with uuid="+str(pair[0]))
         sys.exit(0)
-
+    
     # read second PI from pair
     try:
         pi_pair_right= vnc_lib.physical_interface_read(id=pair[1])
     except:
         print ("Unable to read Physical Interface with uuid="+str(pair[1]))
         sys.exit(0)
-
-
+    
+    
     #create PR
     try:
-        pr = PhysicalRouter("pr_script_"+str(idx))
+        pr = PhysicalRouter("pr_script_"+str(args.service_template_name)+"_"+str(idx))
         pr_created = vnc_lib.physical_router_create(pr)
     except RefsExistError:
         pr_created = vnc_lib.physical_router_update(pr)
     except:
         print ("Unable to create Physical Router")
         sys.exit(0)
-
+    
     # create two PIs connected to PR
     try:
-        pi_left = PhysicalInterface("pi_left_script_"+str(idx),pr)
-        pi_left_created = vnc_lib.physical_interface_create(pi_left)
+        pi_1 = PhysicalInterface("pi_1_"+str(args.service_template_name)+"_script_"+str(idx),pr)
+        pi_1_created = vnc_lib.physical_interface_create(pi_1)
     except RefsExistError:
-        pi_left_created = vnc_lib.physical_interface_update(pi_left)
+        pi_1_created = vnc_lib.physical_interface_update(pi_1)
     except:
-        print ("Unable to create left PI")
+        print ("Unable to create PI 1")
         sys.exit(0)
     try:
-        pi_right = PhysicalInterface("pi_right_script_"+str(idx),pr)
-        pi_right_created = vnc_lib.physical_interface_create(pi_right)
+        pi_2 = PhysicalInterface("pi_2_"+str(args.service_template_name)+"_script_"+str(idx),pr)
+        pi_2_created = vnc_lib.physical_interface_create(pi_2)
     except RefsExistError:
-        pi_right_created = vnc_lib.physical_interface_update(pi_right)
+        pi_2_created = vnc_lib.physical_interface_update(pi_2)
     except:
-        print ("Unable to create right PI")
+        print ("Unable to create PI 2")
         sys.exit(0)
-
-
+    
+    
     # create service appliance within SA_SET and link it to the 2PI:
     try:
-        service_appliance_interface_type_left = ServiceApplianceInterfaceType()
-        service_appliance_interface_type_left.type = "left"
-        service_appliance_interface_type_right = ServiceApplianceInterfaceType()
-        service_appliance_interface_type_right.type = "right"
-        sa = ServiceAppliance("sa_script_"+str(idx),sa_set)
-        sa.add_physical_interface(pi_left,service_appliance_interface_type_left)
-        sa.add_physical_interface(pi_right,service_appliance_interface_type_right)
+        sa = ServiceAppliance("sa_script_"+str(args.service_template_name)+"_"+str(idx),sa_set)
+        sa.add_physical_interface(pi_1)
+        sa.add_physical_interface(pi_2)
         sa_created = vnc_lib.service_appliance_create(sa)
     except RefsExistError:
         sa_created = vnc_lib.service_appliance_update(sa)
     except:
         print ("Unable to create SA")
         sys.exit(0)
-
-
-
+    
+    
+        
     #link pair PIs to SA/PR PIs
-    import pdb; pdb.set_trace()
-    sys.exit(0)
-    pi_left.add_physical_interface(pi_pair_left)
-    pi_right.add_physical_interface(pi_pair_right)
+    #import pdb; pdb.set_trace()
+    #sys.exit(0)
+    pi_1.add_physical_interface(pi_pair_left)
+    pi_2.add_physical_interface(pi_pair_right)
     try:
-        vnc_lib.physical_interface_update(pi_left)
-        vnc_lib.physical_interface_update(pi_right)
+        vnc_lib.physical_interface_update(pi_1)
+        vnc_lib.physical_interface_update(pi_2)
     except:
         print("Unable to link pair PIs to SA PIs")
         sys.exist(0)
@@ -116,7 +113,7 @@ for idx,pair in enumerate(args.physical_pairs):
 
 #create service Template
 try:
-    st = ServiceTemplate(args.st_name)
+    st = ServiceTemplate(args.service_template_name)
     m = {"instance_data":"null", "availability_zone_enable": "false", "service_virtualization_type": "physical-device", "image_name": "analyzer", "service_mode": "transparent", "flavor": "m1.medium", "service_scaling": "false", "vrouter_instance_type": "docker", "ordered_interfaces": "true"}
 
     st.service_template_properties = m
