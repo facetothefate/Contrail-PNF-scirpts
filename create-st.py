@@ -43,14 +43,14 @@ for idx,pair in enumerate(args.physical_pairs):
     try:
         pi_pair_left= vnc_lib.physical_interface_read(id=pair[0])
     except:
-        print ("Unable to read Physical Interface with uuid="+str(pair[0]))
+	    print ("Unable to read Physical Interface with uuid="+str(pair[0]))
         sys.exit(0)
-
+    
     # read second PI from pair
     try:
         pi_pair_right= vnc_lib.physical_interface_read(id=pair[1])
     except:
-        print ("Unable to read Physical Interface with uuid="+str(pair[1]))
+	    print ("Unable to read Physical Interface with uuid="+str(pair[1]))
         sys.exit(0)
 
 
@@ -66,32 +66,28 @@ for idx,pair in enumerate(args.physical_pairs):
 
     # create two PIs connected to PR
     try:
-        pi_left = PhysicalInterface("pi_left_script_"+str(idx),pr)
-        pi_left_created = vnc_lib.physical_interface_create(pi_left)
+        pi_1 = PhysicalInterface("pi_1_script_"+str(idx),pr)
+        pi_1_created = vnc_lib.physical_interface_create(pi_1)
     except RefsExistError:
-        pi_left_created = vnc_lib.physical_interface_update(pi_left)
+        pi_1_created = vnc_lib.physical_interface_update(pi_1)
     except:
-        print ("Unable to create left PI")
+        print ("Unable to create PI 1")
         sys.exit(0)
     try:
-        pi_right = PhysicalInterface("pi_right_script_"+str(idx),pr)
-        pi_right_created = vnc_lib.physical_interface_create(pi_right)
+        pi_2 = PhysicalInterface("pi_2_script_"+str(idx),pr)
+        pi_2_created = vnc_lib.physical_interface_create(pi_2)
     except RefsExistError:
-        pi_right_created = vnc_lib.physical_interface_update(pi_right)
+        pi_2_created = vnc_lib.physical_interface_update(pi_2)
     except:
-        print ("Unable to create right PI")
+        print ("Unable to create PI 2")
         sys.exit(0)
 
 
     # create service appliance within SA_SET and link it to the 2PI:
     try:
-        service_appliance_interface_type_left = ServiceApplianceInterfaceType()
-        service_appliance_interface_type_left.type = "left"
-        service_appliance_interface_type_right = ServiceApplianceInterfaceType()
-        service_appliance_interface_type_right.type = "right"
         sa = ServiceAppliance("sa_script_"+str(idx),sa_set)
-        sa.add_physical_interface(pi_left,service_appliance_interface_type_left)
-        sa.add_physical_interface(pi_right,service_appliance_interface_type_right)
+        sa.add_physical_interface(pi_1)
+        sa.add_physical_interface(pi_2)
         sa_created = vnc_lib.service_appliance_create(sa)
     except RefsExistError:
         sa_created = vnc_lib.service_appliance_update(sa)
@@ -100,15 +96,15 @@ for idx,pair in enumerate(args.physical_pairs):
         sys.exit(0)
 
 
-
+        
     #link pair PIs to SA/PR PIs
     import pdb; pdb.set_trace()
     sys.exit(0)
-    pi_left.add_physical_interface(pi_pair_left)
-    pi_right.add_physical_interface(pi_pair_right)
+    pi_1.add_physical_interface(pi_pair_left)
+    pi_2.add_physical_interface(pi_pair_right)
     try:
-        vnc_lib.physical_interface_update(pi_left)
-        vnc_lib.physical_interface_update(pi_right)
+        vnc_lib.physical_interface_update(pi_1)
+        vnc_lib.physical_interface_update(pi_2)
     except:
         print("Unable to link pair PIs to SA PIs")
         sys.exist(0)
