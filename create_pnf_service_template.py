@@ -13,13 +13,25 @@ def pair(s):
 parser = argparse.ArgumentParser(description='Create service template and link PIs')
 parser.add_argument('--service_template_name', help='service template name', required=True)
 parser.add_argument('--physical_interface_pairs', nargs='*', type=pair, help='Physical pairs must be in the form a1,b1 a2,b2 a3,b3 ...)', required=True)
+parser.add_argument('--admin_user', help='optional admin username')
+parser.add_argument('--admin_password', help='optional admin password')
+parser.add_argument('--admin_tenant_name', help='optional tenant name')
 args = parser.parse_args()
 
+admin_user = "admin"
+admin_password = "zaqwsx"
+admin_tenant_name = "admin"
 
+if args.admin_user:
+    admin_user = args.admin_user
+if args.admin_password:
+    admin_password = args.admin_password
+if args.admin_tenant_name:
+    admin_tenant_name = args.admin_tenant_name
 
 # GET vnc_lib
 try:
-    vnc_lib = vnc_api.VncApi(api_server_host="127.0.0.1",username="admin",password="zaqwsx",tenant_name="admin")
+    vnc_lib = vnc_api.VncApi(api_server_host="127.0.0.1",username=admin_user, password=admin_password, tenant_name=admin_tenant_name)
 except:
     print("Unable to connect to vnc_lib")
     sys.exit(0)
@@ -43,17 +55,17 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     try:
         pi_pair_left= vnc_lib.physical_interface_read(id=pair[0])
     except:
-	    print ("Unable to read Physical Interface with uuid="+str(pair[0]))
+        print ("Unable to read Physical Interface with uuid="+str(pair[0]))
         sys.exit(0)
     
     # read second PI from pair
     try:
         pi_pair_right= vnc_lib.physical_interface_read(id=pair[1])
     except:
-	    print ("Unable to read Physical Interface with uuid="+str(pair[1]))
+        print ("Unable to read Physical Interface with uuid="+str(pair[1]))
         sys.exit(0)
-
-
+    
+    
     #create PR
     try:
         pr = PhysicalRouter("pr_script_"+str(args.service_template_name)+"_"+str(idx))
@@ -63,7 +75,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     except:
         print ("Unable to create Physical Router")
         sys.exit(0)
-
+    
     # create two PIs connected to PR
     try:
         pi_1 = PhysicalInterface("pi_1_"+str(args.service_template_name)+"_script_"+str(idx),pr)
@@ -81,8 +93,8 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     except:
         print ("Unable to create PI 2")
         sys.exit(0)
-
-
+    
+    
     # create service appliance within SA_SET and link it to the 2PI:
     try:
         sa = ServiceAppliance("sa_script_"+str(args.service_template_name)+"_"+str(idx),sa_set)
@@ -94,12 +106,12 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     except:
         print ("Unable to create SA")
         sys.exit(0)
-
-
+    
+    
         
     #link pair PIs to SA/PR PIs
-    import pdb; pdb.set_trace()
-    sys.exit(0)
+    #import pdb; pdb.set_trace()
+    #sys.exit(0)
     pi_1.add_physical_interface(pi_pair_left)
     pi_2.add_physical_interface(pi_pair_right)
     try:
