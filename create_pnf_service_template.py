@@ -114,9 +114,14 @@ for idx,pair in enumerate(args.physical_interface_pairs):
 #create service Template
 try:
     st = ServiceTemplate(args.service_template_name)
-    m = {"instance_data":"null", "availability_zone_enable": "false", "service_virtualization_type": "physical-device", "image_name": "analyzer", "service_mode": "transparent", "flavor": "m1.medium", "service_scaling": "false", "vrouter_instance_type": "docker", "ordered_interfaces": "true"}
+    st_prop = ServiceTemplateType()
+    st_prop.service_virtualization_type = "physical-device"
+    st_prop.service_mode = "transparent"
+    st_prop.service_type = "firewall"
+    st_prop.image_name = "analyzer"
+    #m = {"instance_data":"null", "availability_zone_enable": "false", "service_virtualization_type": "physical-device", "image_name": "analyzer", "service_mode": "transparent", "flavor": "m1.medium", "service_scaling": "false", "vrouter_instance_type": "docker", "ordered_interfaces": "true"}
 
-    st.service_template_properties = m
+    st.set_service_template_properties(st_prop)
     st_created= vnc_lib.service_template_create(st)
 except RefsExistError:
     st_created = vnc_lib.service_template_update(st)
