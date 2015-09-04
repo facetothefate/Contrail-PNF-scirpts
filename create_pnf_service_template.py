@@ -121,6 +121,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
 #create service Template
 try:
     st = ServiceTemplate(args.service_template_name)
+    st.add_service_appliance_set(sa_set)
     st_prop = ServiceTemplateType()
     st_prop.service_virtualization_type = "physical-device"
     st_prop.service_mode = "transparent"
