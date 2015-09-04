@@ -91,7 +91,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     # create service appliance within SA_SET and link it to the 2PI:
     try:
         sa = ServiceAppliance("sa_script_"+str(args.service_template_name)+"_"+str(idx),sa_set)
-        sa.add_physical_interface(pi_1,pi_2)
+        sa.set_physical_interface_list([pi_1,pi_2])
         sa_created = vnc_lib.service_appliance_create(sa)
     except RefsExistError:
         sa_created = vnc_lib.service_appliance_update(sa)
@@ -125,8 +125,13 @@ try:
     st_prop.service_type = "firewall"
     st_prop.image_name = "analyzer"
     #m = {"instance_data":"null", "availability_zone_enable": "false", "service_virtualization_type": "physical-device", "image_name": "analyzer", "service_mode": "transparent", "flavor": "m1.medium", "service_scaling": "false", "vrouter_instance_type": "docker", "ordered_interfaces": "true"}
-    
+    st_int_left = ServiceTemplateInterfaceType()
+    st_int_left.service_interface_type = "left"
+    st_int_right = ServiceTemplateInterfaceType()
+    st_int_right.service_interface_type = "right"
+    st_prop.interface_type = [st_int_left,st_int_right]
     st.set_service_template_properties(st_prop)
+
     st_created= vnc_lib.service_template_create(st)
 except RefsExistError:
     st_created = vnc_lib.service_template_update(st)
