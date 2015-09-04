@@ -91,8 +91,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     # create service appliance within SA_SET and link it to the 2PI:
     try:
         sa = ServiceAppliance("sa_script_"+str(args.service_template_name)+"_"+str(idx),sa_set)
-        sa.add_physical_interface(pi_1)
-        sa.add_physical_interface(pi_2)
+        sa.add_physical_interface(pi_1,pi_2)
         sa_created = vnc_lib.service_appliance_create(sa)
     except RefsExistError:
         sa_created = vnc_lib.service_appliance_update(sa)
