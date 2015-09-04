@@ -64,7 +64,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
         pr_created = vnc_lib.physical_router_update(pr)
     except Exception as e:
         print ("Unable to create Physical Router")
-        traceback.print_exception(e)
+        traceback.print_exc(e)
         sys.exit(0)
     
     # create two PIs connected to PR
@@ -74,7 +74,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     except RefsExistError:
         pi_1_created = vnc_lib.physical_interface_update(pi_1)
     except Exception as e:
-        traceback.print_exception(e)
+        traceback.print_exc(e)
         print ("Unable to create PI 1")
         sys.exit(0)
     try:
@@ -83,7 +83,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     except RefsExistError:
         pi_2_created = vnc_lib.physical_interface_update(pi_2)
     except Exception as e:
-        traceback.print_exception(e)
+        traceback.print_exc(e)
         print ("Unable to create PI 2")
         sys.exit(0)
     
@@ -97,7 +97,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     except RefsExistError:
         sa_created = vnc_lib.service_appliance_update(sa)
     except Exception as e:
-        traceback.print_exception(e)
+        traceback.print_exc(e)
         print ("Unable to create SA")
         sys.exit(0)
     
@@ -112,7 +112,7 @@ for idx,pair in enumerate(args.physical_interface_pairs):
         vnc_lib.physical_interface_update(pi_1)
         vnc_lib.physical_interface_update(pi_2)
     except Exception as e:
-        traceback.print_exception(e)
+        traceback.print_exc(e)
         print("Unable to link pair PIs to SA PIs")
         sys.exist(0)
 
@@ -132,6 +132,6 @@ try:
 except RefsExistError:
     st_created = vnc_lib.service_template_update(st)
 except Exception as e:
-    traceback.print_exception(e)
+    traceback.print_exc(e)
     print ("Unable to create Service template")
     sys.exit(0)
