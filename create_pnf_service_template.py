@@ -1,5 +1,6 @@
 import argparse
 import sys
+import traceback
 from vnc_api.vnc_api import *
 from vnc_api import vnc_api
 
@@ -61,8 +62,9 @@ for idx,pair in enumerate(args.physical_interface_pairs):
         pr_created = vnc_lib.physical_router_create(pr)
     except RefsExistError:
         pr_created = vnc_lib.physical_router_update(pr)
-    except:
+    except Exception as e:
         print ("Unable to create Physical Router")
+        print_exception(e)
         sys.exit(0)
     
     # create two PIs connected to PR
@@ -71,7 +73,8 @@ for idx,pair in enumerate(args.physical_interface_pairs):
         pi_1_created = vnc_lib.physical_interface_create(pi_1)
     except RefsExistError:
         pi_1_created = vnc_lib.physical_interface_update(pi_1)
-    except:
+    except Exception as e:
+        print_exception(e)
         print ("Unable to create PI 1")
         sys.exit(0)
     try:
@@ -79,7 +82,8 @@ for idx,pair in enumerate(args.physical_interface_pairs):
         pi_2_created = vnc_lib.physical_interface_create(pi_2)
     except RefsExistError:
         pi_2_created = vnc_lib.physical_interface_update(pi_2)
-    except:
+    except Exception as e:
+        print_exception(e)
         print ("Unable to create PI 2")
         sys.exit(0)
     
@@ -92,7 +96,8 @@ for idx,pair in enumerate(args.physical_interface_pairs):
         sa_created = vnc_lib.service_appliance_create(sa)
     except RefsExistError:
         sa_created = vnc_lib.service_appliance_update(sa)
-    except:
+    except Exception as e:
+        print_exception(e)
         print ("Unable to create SA")
         sys.exit(0)
     
@@ -106,7 +111,8 @@ for idx,pair in enumerate(args.physical_interface_pairs):
     try:
         vnc_lib.physical_interface_update(pi_1)
         vnc_lib.physical_interface_update(pi_2)
-    except:
+    except Exception as e:
+        print_exception(e)
         print("Unable to link pair PIs to SA PIs")
         sys.exist(0)
 
@@ -120,11 +126,12 @@ try:
     st_prop.service_type = "firewall"
     st_prop.image_name = "analyzer"
     #m = {"instance_data":"null", "availability_zone_enable": "false", "service_virtualization_type": "physical-device", "image_name": "analyzer", "service_mode": "transparent", "flavor": "m1.medium", "service_scaling": "false", "vrouter_instance_type": "docker", "ordered_interfaces": "true"}
-
+    
     st.set_service_template_properties(st_prop)
     st_created= vnc_lib.service_template_create(st)
 except RefsExistError:
     st_created = vnc_lib.service_template_update(st)
-except:
+except Exception as e:
+    print_exception(e)
     print ("Unable to create Service template")
     sys.exit(0)
